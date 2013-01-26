@@ -43,7 +43,7 @@ func NewGraphic(filename string, width float32, height float32) (*Graphic, error
 	}
 
 	switch g.format {
-	case "pdf", "png", "ps":
+	case "pdf", "png", "ps", "svg":
 		// supported format types
 	default:
 		return nil, errors.New("unsupported format: " + g.format)

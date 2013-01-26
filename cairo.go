@@ -35,6 +35,12 @@ func (g *Graphic) cairoInit() error {
 			C.double(g.width),
 			C.double(g.height),
 		)
+	case "svg":
+		g.cairo.surface = C.cairo_svg_surface_create(
+			C.CString(g.filename),
+			C.double(g.width),
+			C.double(g.height),
+		)
 	default:
 		return errors.New("cairo: unsupported format: " + g.format)
 	}
@@ -51,7 +57,7 @@ func (g *Graphic) cairoInit() error {
 func (g *Graphic) cairoClose() error {
 	// write the surface to file
 	switch g.format {
-	case "pdf", "ps":
+	case "pdf", "ps", "svg":
 		// written when the surface is destroyed
 	case "png":
 		// TODO: use the go image libraries to handle
