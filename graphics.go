@@ -21,6 +21,8 @@ type Graphic struct {
 //
 // Width and height are in pts for pdf, ps; pixels for png.
 // Pixel measures will be truncated into integers
+//
+// Close the graphic to write the file
 func NewGraphic(filename string, width float32, height float32) (*Graphic, error) {
 	g := &Graphic{}
 
@@ -33,6 +35,7 @@ func NewGraphic(filename string, width float32, height float32) (*Graphic, error
 	return g, nil
 }
 
+// completes the file being written to
 func (g *Graphic) Close() error {
 	err := g.cairo.Close()
 	if err != nil {
@@ -40,4 +43,14 @@ func (g *Graphic) Close() error {
 	}
 
 	return nil
+}
+
+// save the drawing context
+func (g *Graphic) Save() {
+	g.cairo.save()
+}
+
+// restore the drawing context
+func (g *Graphic) Restore() {
+	g.cairo.restore()
 }

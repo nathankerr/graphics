@@ -5,15 +5,15 @@ package graphics
 import "C"
 
 import (
-	"path/filepath"
 	"errors"
+	"path/filepath"
 )
 
 type cairo struct {
-	format string
+	format   string
 	filename string // needs to be kept for image surfaces
-	surface *C.cairo_surface_t
-	cr      *C.cairo_t
+	surface  *C.cairo_surface_t
+	cr       *C.cairo_t
 }
 
 func newCairo(filename string, width float32, height float32) (*cairo, error) {
@@ -120,4 +120,12 @@ func checkCairoStatus(status C.cairo_status_t) error {
 		return errors.New(C.GoString(C.cairo_status_to_string(status)))
 	}
 	return nil
+}
+
+func (c *cairo) save() {
+	C.cairo_save(c.cr)
+}
+
+func (c *cairo) restore() {
+	C.cairo_restore(c.cr)
 }
