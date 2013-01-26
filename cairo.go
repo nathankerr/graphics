@@ -16,6 +16,7 @@ type cairo struct {
 func (g *Graphic) cairoInit() error {
 	g.cairo = cairo{}
 
+	// create the surface, error checking is the same for all
 	switch g.format {
 	case "pdf":
 		g.cairo.surface = C.cairo_pdf_surface_create(
@@ -46,7 +47,16 @@ func (g *Graphic) cairoInit() error {
 	}
 
 	// error checking for all surface creations
-	err := g.cairoStatus()
+	status := C.cairo_surface_status(g.cairo.surface)
+	err := checkCairoStatus(status)
+	if err != nil {
+		return err
+	}
+
+	// create the cairo context
+	g.cairo.cr = C.cairo_create(g.cairo.surface)
+	status = C.cairo_status(g.cairo.cr)
+	err = checkCairoStatus(status)
 	if err != nil {
 		return err
 	}
@@ -55,6 +65,15 @@ func (g *Graphic) cairoInit() error {
 }
 
 func (g *Graphic) cairoClose() error {
+	// cr needs to be destroyed before the surface
+	// and the status needs to be checked before that
+	status := C.cairo_status(g.cairo.cr)
+	err := checkCairoStatus(status)
+	if err != nil {
+		return err
+	}
+	C.cairo_destroy(g.cairo.cr)
+
 	// write the surface to file
 	switch g.format {
 	case "pdf", "ps", "svg":
@@ -75,17 +94,13 @@ func (g *Graphic) cairoClose() error {
 	}
 
 	C.cairo_surface_destroy(g.cairo.surface)
-	err := g.cairoStatus()
+	status = C.cairo_surface_status(g.cairo.surface)
+	err = checkCairoStatus(status)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (g *Graphic) cairoStatus() error {
-	status := C.cairo_surface_status(g.cairo.surface)
-	return checkCairoStatus(status)
 }
 
 func checkCairoStatus(status C.cairo_status_t) error {
