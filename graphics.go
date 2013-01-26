@@ -24,9 +24,9 @@ type Graphic struct {
 }
 
 // Format is determined from filename extension
-// Supported formats: pdf, png
+// Supported formats: pdf, png, ps
 //
-// Width and height are in pts for pdf; pixels for png.
+// Width and height are in pts for pdf, ps; pixels for png.
 // Pixel measures will be truncated into integers
 func NewGraphic(filename string, width float32, height float32) (*Graphic, error) {
 	filename = filepath.Clean(filename)
@@ -43,7 +43,7 @@ func NewGraphic(filename string, width float32, height float32) (*Graphic, error
 	}
 
 	switch g.format {
-	case "pdf", "png":
+	case "pdf", "png", "ps":
 		// supported format types
 	default:
 		return nil, errors.New("unsupported format: " + g.format)

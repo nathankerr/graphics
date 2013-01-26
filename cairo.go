@@ -29,6 +29,12 @@ func (g *Graphic) cairoInit() error {
 			C.int(g.width),
 			C.int(g.height),
 		)
+	case "ps":
+		g.cairo.surface = C.cairo_ps_surface_create(
+			C.CString(g.filename),
+			C.double(g.width),
+			C.double(g.height),
+		)
 	default:
 		return errors.New("cairo: unsupported format: " + g.format)
 	}
@@ -45,7 +51,7 @@ func (g *Graphic) cairoInit() error {
 func (g *Graphic) cairoClose() error {
 	// write the surface to file
 	switch g.format {
-	case "pdf":
+	case "pdf", "ps":
 		// written when the surface is destroyed
 	case "png":
 		// TODO: use the go image libraries to handle
