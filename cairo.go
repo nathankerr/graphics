@@ -1,7 +1,9 @@
 package graphics
 
 // #cgo pkg-config: cairo
-// #include "cairo.h"
+// #include <cairo/cairo-pdf.h>
+// #include <cairo/cairo-ps.h>
+// #include <cairo/cairo-svg.h>
 import "C"
 
 import (
@@ -120,112 +122,4 @@ func checkCairoStatus(status C.cairo_status_t) error {
 		return errors.New(C.GoString(C.cairo_status_to_string(status)))
 	}
 	return nil
-}
-
-//
-// straight forward wrapper functions
-//
-
-func (c *cairo) save() {
-	C.cairo_save(c.cr)
-}
-
-func (c *cairo) restore() {
-	C.cairo_restore(c.cr)
-}
-
-func (c *cairo) newPath() {
-	C.cairo_new_path(c.cr)
-}
-
-func (c *cairo) closePath() {
-	C.cairo_close_path(c.cr)
-}
-
-func (c *cairo) arc(center Point, radius float32, angle1 float32, angle2 float32) {
-	C.cairo_arc(
-		c.cr,
-		C.double(center.x),
-		C.double(center.y),
-		C.double(radius),
-		C.double(angle1),
-		C.double(angle2),
-	)
-}
-
-func (c *cairo) arcNegative(center Point, radius float32, angle1 float32, angle2 float32) {
-	C.cairo_arc_negative(
-		c.cr,
-		C.double(center.x),
-		C.double(center.y),
-		C.double(radius),
-		C.double(angle1),
-		C.double(angle2),
-	)
-}
-
-func (c *cairo) curveTo(p1 Point, p2 Point, p3 Point) {
-	C.cairo_curve_to(
-		c.cr,
-		C.double(p1.x),
-		C.double(p1.y),
-		C.double(p2.x),
-		C.double(p2.y),
-		C.double(p3.x),
-		C.double(p3.y),
-	)
-}
-
-func (c *cairo) lineTo(p Point) {
-	C.cairo_line_to(
-		c.cr,
-		C.double(p.x),
-		C.double(p.y),
-	)
-}
-
-func (c *cairo) moveTo(p Point) {
-	C.cairo_move_to(
-		c.cr,
-		C.double(p.x),
-		C.double(p.y),
-	)
-}
-
-func (c *cairo) rectangle(topLeft Point, width float32, height float32) {
-	C.cairo_rectangle(
-		c.cr,
-		C.double(topLeft.x),
-		C.double(topLeft.y),
-		C.double(width),
-		C.double(height),
-	)
-}
-
-func (c *cairo) relCurveTo(dp1 Point, dp2 Point, dp3 Point) {
-	C.cairo_rel_curve_to(
-		c.cr,
-		C.double(dp1.x),
-		C.double(dp1.y),
-		C.double(dp2.x),
-		C.double(dp2.y),
-		C.double(dp3.x),
-		C.double(dp3.y),
-	)
-}
-
-func (c *cairo) relLineTo(dp Point) {
-	C.cairo_rel_line_to(
-		c.cr,
-		C.double(dp.x),
-		C.double(dp.y),
-	)
-}
-
-func (c *cairo) relMoveTo(dp Point) {
-	C.cairo_rel_move_to(
-		c.cr,
-		C.double(dp.x),
-		C.double(dp.y),
-	)
 }

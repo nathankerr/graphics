@@ -44,13 +44,3 @@ func (g *Graphic) Close() error {
 
 	return nil
 }
-
-// save the drawing context
-func (g *Graphic) Save() {
-	g.cairo.save()
-}
-
-// restore the drawing context
-func (g *Graphic) Restore() {
-	g.cairo.restore()
-}
