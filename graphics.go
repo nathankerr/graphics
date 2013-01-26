@@ -5,10 +5,7 @@
 
 package graphics
 
-import (
-	"errors"
-	"path/filepath"
-)
+import ()
 
 const (
 	A5_WIDTH  = 419.5276
@@ -16,11 +13,7 @@ const (
 )
 
 type Graphic struct {
-	filename string
-	format   string
-	width    float32
-	height   float32
-	cairo    cairo
+	cairo *cairo
 }
 
 // Format is determined from filename extension
@@ -29,27 +22,10 @@ type Graphic struct {
 // Width and height are in pts for pdf, ps; pixels for png.
 // Pixel measures will be truncated into integers
 func NewGraphic(filename string, width float32, height float32) (*Graphic, error) {
-	filename = filepath.Clean(filename)
-	filename, err := filepath.Abs(filename)
-	if err != nil {
-		return nil, err
-	}
+	g := &Graphic{}
 
-	g := &Graphic{
-		filename: filename,
-		format:   filepath.Ext(filename)[1:],
-		width:    width,
-		height:   height,
-	}
-
-	switch g.format {
-	case "pdf", "png", "ps", "svg":
-		// supported format types
-	default:
-		return nil, errors.New("unsupported format: " + g.format)
-	}
-
-	err = g.cairoInit()
+	var err error
+	g.cairo, err = newCairo(filename, width, height)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +34,7 @@ func NewGraphic(filename string, width float32, height float32) (*Graphic, error
 }
 
 func (g *Graphic) Close() error {
-	err := g.cairoClose()
+	err := g.cairo.Close()
 	if err != nil {
 		return err
 	}

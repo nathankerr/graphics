@@ -1,100 +1,112 @@
 package graphics
 
-// #cgo pkg-config: pangocairo
+// #cgo pkg-config: cairo
 // #include "cairo.h"
 import "C"
 
 import (
+	"path/filepath"
 	"errors"
 )
 
 type cairo struct {
+	format string
+	filename string // needs to be kept for image surfaces
 	surface *C.cairo_surface_t
 	cr      *C.cairo_t
 }
 
-func (g *Graphic) cairoInit() error {
-	g.cairo = cairo{}
+func newCairo(filename string, width float32, height float32) (*cairo, error) {
+	filename = filepath.Clean(filename)
+	filename, err := filepath.Abs(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	c := &cairo{
+		format:   filepath.Ext(filename)[1:],
+		filename: filename,
+	}
 
 	// create the surface, error checking is the same for all
-	switch g.format {
+	switch c.format {
 	case "pdf":
-		g.cairo.surface = C.cairo_pdf_surface_create(
-			C.CString(g.filename),
-			C.double(g.width),
-			C.double(g.height),
+		c.surface = C.cairo_pdf_surface_create(
+			C.CString(filename),
+			C.double(width),
+			C.double(height),
 		)
 	case "png":
-		g.cairo.surface = C.cairo_image_surface_create(
+		c.surface = C.cairo_image_surface_create(
 			C.CAIRO_FORMAT_ARGB32,
-			C.int(g.width),
-			C.int(g.height),
+			C.int(width),
+			C.int(height),
 		)
 	case "ps":
-		g.cairo.surface = C.cairo_ps_surface_create(
-			C.CString(g.filename),
-			C.double(g.width),
-			C.double(g.height),
+		c.surface = C.cairo_ps_surface_create(
+			C.CString(filename),
+			C.double(width),
+			C.double(height),
 		)
 	case "svg":
-		g.cairo.surface = C.cairo_svg_surface_create(
-			C.CString(g.filename),
-			C.double(g.width),
-			C.double(g.height),
+		c.surface = C.cairo_svg_surface_create(
+			C.CString(filename),
+			C.double(width),
+			C.double(height),
 		)
 	default:
-		return errors.New("cairo: unsupported format: " + g.format)
+		return nil, errors.New("cairo: unsupported format: " + c.format)
 	}
 
 	// error checking for all surface creations
-	status := C.cairo_surface_status(g.cairo.surface)
-	err := checkCairoStatus(status)
+	status := C.cairo_surface_status(c.surface)
+	err = checkCairoStatus(status)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// create the cairo context
-	g.cairo.cr = C.cairo_create(g.cairo.surface)
-	status = C.cairo_status(g.cairo.cr)
+	c.cr = C.cairo_create(c.surface)
+	status = C.cairo_status(c.cr)
 	err = checkCairoStatus(status)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return c, nil
 }
 
-func (g *Graphic) cairoClose() error {
+func (c *cairo) Close() error {
 	// cr needs to be destroyed before the surface
 	// and the status needs to be checked before that
-	status := C.cairo_status(g.cairo.cr)
+	status := C.cairo_status(c.cr)
 	err := checkCairoStatus(status)
 	if err != nil {
 		return err
 	}
-	C.cairo_destroy(g.cairo.cr)
+	C.cairo_destroy(c.cr)
 
 	// write the surface to file
-	switch g.format {
+	switch c.format {
 	case "pdf", "ps", "svg":
 		// written when the surface is destroyed
 	case "png":
 		// TODO: use the go image libraries to handle
 		// image output as cairo's png api is a "toy"
 		status := C.cairo_surface_write_to_png(
-			g.cairo.surface,
-			C.CString(g.filename),
+			c.surface,
+			C.CString(c.filename),
 		)
 		err := checkCairoStatus(status)
 		if err != nil {
 			return err
 		}
 	default:
-		return errors.New("cairo: unsupported format: " + g.format)
+		return errors.New("cairo: unsupported format: " + c.format)
 	}
 
-	C.cairo_surface_destroy(g.cairo.surface)
-	status = C.cairo_surface_status(g.cairo.surface)
+	C.cairo_surface_destroy(c.surface)
+	status = C.cairo_surface_status(c.surface)
 	err = checkCairoStatus(status)
 	if err != nil {
 		return err
