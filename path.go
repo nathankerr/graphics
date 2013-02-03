@@ -9,6 +9,49 @@ type Point struct {
 	y float32
 }
 
+// Paths need to be manually destroyed
+// type Path C.cairo_path_t
+// func (p *Path) Destroy() {
+// 	cr_path := p.(C.cairo_path_t)
+// 	C.cairo_path_destroy(cr_path)
+// }
+
+// func (g *Graphic) CopyPath() error {
+// 	path := C.cairo_copy_path(g.cairo.cr)
+
+// 	status := C.cairo_status(g.cairo.cr)
+// 	err := checkCairoStatus(status)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return path, nil
+// }
+
+// func (g *Graphic) CopyPathFlat() error {
+// 	path := C.cairo_copy_path_flat(g.cairo.cr)
+
+// 	status := C.cairo_status(g.cairo.cr)
+// 	err := checkCairoStatus(status)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return path, nil
+// }
+
+// func (g *Graphic) AppendPath(p *Path) error {
+// 	C.cairo_append_path(g.cairo.cr, p)
+
+// 	status := C.cairo_status(g.cairo.cr)
+// 	err := checkCairoStatus(status)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil	
+// }
+
 func (g *Graphic) Save() {
 	C.cairo_save(g.cairo.cr)
 }
