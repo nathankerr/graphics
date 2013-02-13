@@ -21,7 +21,7 @@ type Graphic struct {
 // Pixel measures will be truncated into integers
 //
 // Close the graphic to write the file
-func NewGraphic(filename string, width float64, height float64) (*Graphic, error) {
+func Create(filename string, width float64, height float64) (*Graphic, error) {
 	g := &Graphic{}
 
 	var err error
@@ -33,7 +33,7 @@ func NewGraphic(filename string, width float64, height float64) (*Graphic, error
 	return g, nil
 }
 
-// completes the file being written to
+// completes and closes the file being written to
 func (g *Graphic) Close() error {
 	err := g.cairo.Close()
 	if err != nil {
