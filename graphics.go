@@ -50,7 +50,7 @@ func Create(filename string, width float64, height float64) (*Graphic, error) {
 
 	g.format = filepath.Ext(filename)[1:]
 
-	// create the surface, error checking is the same for all
+	// create the surface
 	switch g.format {
 	case "pdf":
 		g.surface = C.cairo_pdf_surface_create(
@@ -79,8 +79,14 @@ func Create(filename string, width float64, height float64) (*Graphic, error) {
 	default:
 		return nil, errors.New("cairo: unsupported format: " + g.format)
 	}
-
 	err = g.cairoSurfaceStatus()
+	if err != nil {
+		return nil, err
+	}
+
+	// create the cairo context
+	g.cr = C.cairo_create(g.surface)
+	err = g.cairoStatus()
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +96,21 @@ func Create(filename string, width float64, height float64) (*Graphic, error) {
 
 // completes and closes the file being written to
 func (g *Graphic) Close() error {
+	// destroy the context
+	err := g.cairoStatus()
+	if err != nil {
+		return err
+	}
+	C.cairo_destroy(g.cr)
+
+	// finishing the surface writes pdf, ps, and svg files
 	C.cairo_surface_finish(g.surface)
-	err := g.cairoSurfaceStatus()
+	err = g.cairoSurfaceStatus()
 	if err != nil {
 		return err
 	}
 
+	// write other formats
 	switch g.format {
 	case "pdf", "ps", "svg":
 		// cairo_surface_finish writes the surface to file
@@ -135,6 +150,7 @@ func (g *Graphic) Close() error {
 		panic("unsupported format: " + g.format)
 	}
 
+	// destroy the surface
 	C.cairo_surface_destroy(g.surface)
 	err = g.cairoSurfaceStatus()
 	if err != nil {
