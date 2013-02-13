@@ -1,6 +1,9 @@
 package graphics
 
 import (
+	"fmt"
+	"image/png"
+	"os"
 	"testing"
 )
 
@@ -9,9 +12,9 @@ func TestNewGraphic(t *testing.T) {
 
 	tests = append(tests, "pdf")
 	tests = append(tests, "png")
+	tests = append(tests, "jpeg")
 	tests = append(tests, "ps")
 	tests = append(tests, "svg")
-	tests = append(tests, "jpeg")
 
 	for _, test := range tests {
 		filename := "test." + test
@@ -19,6 +22,18 @@ func TestNewGraphic(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		img, err := g.Image()
+		imageFilename := fmt.Sprintf("test.%s.png", test)
+		imageFile, err := os.Create(imageFilename)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = png.Encode(imageFile, img)
+		if err != nil {
+			t.Fatal(err)
+		}
+		imageFile.Close()
 
 		err = g.Close()
 		if err != nil {
