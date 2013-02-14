@@ -32,9 +32,9 @@ type Graphic struct {
 }
 
 // Format is determined from filename extension
-// Supported formats: jpeg, pdf, png, ps, svg
+// Supported formats: eps, jpeg, pdf, png, ps, svg
 //
-// Width and height are in pts for pdf, ps, and svg; pixels for jpeg and png.
+// Width and height are in pts for eps, pdf, ps, and svg; pixels for jpeg and png.
 // Pixel measures will be truncated into integers
 //
 // Close the graphic to write the file
@@ -64,12 +64,15 @@ func Create(filename string, width float64, height float64) (*Graphic, error) {
 			C.int(width),
 			C.int(height),
 		)
-	case "ps":
+	case "ps", "eps":
 		g.surface = C.cairo_ps_surface_create(
 			C.CString(filename),
 			C.double(width),
 			C.double(height),
 		)
+		if g.format == "eps" {
+			C.cairo_ps_surface_set_eps(g.surface, 1)
+		}
 	case "svg":
 		g.surface = C.cairo_svg_surface_create(
 			C.CString(filename),
@@ -112,7 +115,7 @@ func (g *Graphic) Close() error {
 
 	// write other formats
 	switch g.format {
-	case "pdf", "ps", "svg":
+	case "eps", "pdf", "ps", "svg":
 		// cairo_surface_finish writes the surface to file
 	case "png":
 		img, err := g.Image()
@@ -164,7 +167,7 @@ func (g *Graphic) Close() error {
 func (g *Graphic) Image() (image.Image, error) {
 	var surface *C.cairo_surface_t
 	switch g.format {
-	case "pdf", "ps", "svg":
+	case "eps", "pdf", "ps", "svg":
 		// map vector surfaces to an image surface
 		surface = C.cairo_surface_map_to_image(g.surface, nil)
 		defer C.cairo_surface_unmap_image(g.surface, surface)

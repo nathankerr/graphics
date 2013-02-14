@@ -14,6 +14,7 @@ func TestNewGraphic(t *testing.T) {
 	tests = append(tests, "png")
 	tests = append(tests, "jpeg")
 	tests = append(tests, "ps")
+	tests = append(tests, "eps")
 	tests = append(tests, "svg")
 
 	for _, test := range tests {
